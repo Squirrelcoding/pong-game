@@ -1,31 +1,15 @@
-use crate::lib::component::Component;
-
-use super::{
-    component::{ball::Ball, player::Player},
-    shape::Shape,
-    Point,
-};
+use crate::lib::Point;
 
 pub const SCREEN_WIDTH: i32 = 100;
 pub const SCREEN_HEIGHT: i32 = 20;
 
 pub struct Screen {
-    p1: Player,
-    p2: Player,
-    ball: Ball,
     pub buf: [u8; (SCREEN_WIDTH * SCREEN_HEIGHT) as usize],
 }
 
 impl Screen {
     pub fn new() -> Screen {
-        let p1_pos = Point::new(-40, 0);
-        let p2_pos = Point::new(SCREEN_WIDTH - 10, 0);
-        let ball_pos = Point::new(0, 0);
-
         Screen {
-            p1: Player::new(p1_pos),
-            p2: Player::new(p2_pos),
-            ball: Ball::new(ball_pos),
             buf: [0; (SCREEN_WIDTH * SCREEN_HEIGHT) as usize],
         }
     }

@@ -1,11 +1,10 @@
 pub mod component;
-pub mod screen;
-pub mod shape;
+pub mod game;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Point {
-    pub x: i32,
-    pub y: i32,
+    x: i32,
+    y: i32,
 }
 impl Point {
     pub fn new(x: i32, y: i32) -> Self {

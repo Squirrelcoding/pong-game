@@ -3,11 +3,8 @@ mod lib;
 use std::{thread, time::Duration};
 
 use lib::{
-    component::{
-        ball::{Ball},
-        Component, Direction,
-    },
-    screen::{Screen, SCREEN_HEIGHT, SCREEN_WIDTH},
+    component::{player::Player, Component, Direction},
+    game::{screen::Screen},
     Point,
 };
 
@@ -17,11 +14,14 @@ fn main() {
     // screen.write_pixel(Point::new(-50, -9), 1);
     // screen.update_screen();
 
-    let mut ball = Ball::new(Point::new(40, 0));
+    let mut p1 = Player::new(Point::new(-40, 5));
+    let mut p2 = Player::new(Point::new(40, -9));
 
     loop {
         screen.update_screen();
-        ball.move_self(&mut screen);
-        thread::sleep(Duration::from_millis(20));
+        p1.action(Direction::Down, &mut screen);
+        p2.action(Direction::Up, &mut screen);
+
+        thread::sleep(Duration::from_millis(10));
     }
 }

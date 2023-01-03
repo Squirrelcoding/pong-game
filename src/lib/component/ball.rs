@@ -1,5 +1,7 @@
+use rand::{thread_rng, Rng};
+
 use crate::lib::{
-    screen::{self, Screen, SCREEN_WIDTH},
+    game::screen::{Screen, SCREEN_HEIGHT, SCREEN_WIDTH},
     Point,
 };
 
@@ -18,21 +20,66 @@ impl Ball {
             pos,
             width: 3,
             height: 4,
-            direction: Direction::Right,
-        }
-    }
-
-    /// Clears the ball off the screen
-    fn clear(&mut self, screen: &mut Screen) {
-        for i in 0..self.width {
-            for j in 0..self.height {
-                screen.write_pixel(Point::new(self.pos.x() + i, self.pos.y + j), 0);
-            }
+            direction: Direction::Upright,
         }
     }
 
     pub fn move_self(&mut self, screen: &mut Screen) {
         self.action(self.direction.clone(), screen);
+    }
+
+    /// Returns a random direction for the ball to spin
+    // Writen by ChatGPT.
+    fn bounce_back(&mut self) {
+        let mut rng = thread_rng();
+        let choice = rng.gen_range(0..2);
+
+        let new_direction = match self.direction {
+            Direction::Up => {
+                if choice == 0 {
+                    Direction::Downleft
+                } else {
+                    Direction::Downright
+                }
+            }
+            Direction::Down => {
+                if choice == 0 {
+                    Direction::Upleft
+                } else {
+                    Direction::Upright
+                }
+            }
+            Direction::Upright => {
+                if choice == 0 {
+                    Direction::Downright
+                } else {
+                    Direction::Downleft
+                }
+            }
+            Direction::Upleft => {
+                if choice == 0 {
+                    Direction::Upright
+                } else {
+                    Direction::Downright
+                }
+            }
+            Direction::Downright => {
+                if choice == 0 {
+                    Direction::Upright
+                } else {
+                    Direction::Upleft
+                }
+            }
+            Direction::Downleft => {
+                if choice == 0 {
+                    Direction::Upright
+                } else {
+                    Direction::Upleft
+                }
+            }
+            _ => unreachable!(),
+        };
+        self.direction = new_direction;
     }
 }
 
@@ -65,6 +112,22 @@ impl Component for Ball {
                     screen.write_pixel(Point::new(self.pos.x() + i, old_top_row_y), 0);
                 }
             }
+            Direction::Upright => {
+                self.action(Direction::Right, screen);
+                self.action(Direction::Up, screen);
+            }
+            Direction::Downright => {
+                self.action(Direction::Right, screen);
+                self.action(Direction::Down, screen);
+            }
+            Direction::Upleft => {
+                self.action(Direction::Left, screen);
+                self.action(Direction::Up, screen);
+            }
+            Direction::Downleft => {
+                self.action(Direction::Left, screen);
+                self.action(Direction::Down, screen);
+            }
             Direction::Left => {
                 self.pos.x -= 1;
 
@@ -87,25 +150,18 @@ impl Component for Ball {
                     screen.write_pixel(Point::new(old_first_last_column, self.pos.y + i), 0);
                 }
             }
-            Direction::Upright => {
-                self.action(Direction::Right, screen);
-                self.action(Direction::Up, screen);
-            }
-            Direction::Downright => {
-                self.action(Direction::Right, screen);
-                self.action(Direction::Down, screen);
-            }
-            Direction::Upleft => {
-                self.action(Direction::Left, screen);
-                self.action(Direction::Up, screen);
-            }
-            Direction::Downleft => {
-                self.action(Direction::Left, screen);
-                self.action(Direction::Down, screen);
-            }
         }
 
         self.draw(screen);
+    }
+
+    /// Clears the ball off the screen
+    fn clear(&mut self, screen: &mut Screen) {
+        for i in 0..self.width {
+            for j in 0..self.height {
+                screen.write_pixel(Point::new(self.pos.x() + i, self.pos.y + j), 0);
+            }
+        }
     }
 
     fn draw(&self, screen: &mut Screen) {
@@ -119,42 +175,43 @@ impl Component for Ball {
     fn handle_collide(&mut self, edge: Edge, screen: &mut Screen) {
         self.clear(screen);
 
-        // self.pos.y += match self.pos.y.is_positive() {
-        // true => -self.height,
-        // false => self.height,
-        // };
-
         match edge {
-            Edge::Top => self.pos.y -= self.height,
-            Edge::Bottom => self.pos.y += self.height,
-            Edge::Left => self.pos.x += self.width,
-            Edge::Right => self.pos.x -= self.width + 1,
+            Edge::Top => self.pos.y -= self.height + 1,
+            Edge::Bottom => self.pos.y += self.height + 1,
+            Edge::Left => todo!("aaa"),
+            Edge::Right => todo!("aaa"),
         }
 
-        self.direction = match self.direction {
-            Direction::Upright => Direction::Downright,
-            Direction::Downright => Direction::Upright,
-            Direction::Upleft => Direction::Downleft,
-            Direction::Downleft => Direction::Upleft,
-            Direction::Up => Direction::Down,
-            Direction::Down => Direction::Up,
-            Direction::Left => Direction::Right,
-            Direction::Right => Direction::Left,
-        };
+        self.bounce_back();
     }
 
+    // Code written by me and refactored by ChatGPT
     fn is_at_edge(&self) -> Option<Edge> {
         let center = Point::new(
             self.pos.x() + (self.width / 2),
             self.pos.y() + (self.height / 2),
         );
 
-        if ((SCREEN_WIDTH / 2) - center.x.abs()) <= (self.width / 2) + 1 {
+        // Calculate the distance between the center of the box and the edges of the screen
+        let x_distance_from_edge = (SCREEN_WIDTH / 2) - center.x.abs();
+        let y_distance_from_edge = (SCREEN_HEIGHT / 2) - center.y.abs();
+
+        // Check if the distance between the center of the box and the edge of the screen is close
+        // and if so, check the sign of x and return the appropriate edge
+        if x_distance_from_edge <= (self.width / 2) + 1 {
             if self.pos.x.is_positive() {
                 return Some(Edge::Right);
             } else {
                 return Some(Edge::Left);
             }
+        }
+
+        // Check if the distance between the center of the box and the top or bottom edge of the screen
+        // is close and if so, return the appropriate edge
+        if y_distance_from_edge <= (self.height / 2) - 1 && self.pos.y.is_positive() {
+            return Some(Edge::Top);
+        } else if y_distance_from_edge < self.height {
+            return Some(Edge::Bottom);
         }
 
         None

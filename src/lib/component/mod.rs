@@ -1,7 +1,8 @@
+use super::game::screen::Screen;
+
 pub mod ball;
 pub mod player;
-
-use super::screen::Screen;
+pub mod shape;
 
 pub trait Component {
     /// Takes in a given direction and moves the component one unit in said direction. The screen is also updated.
@@ -15,6 +16,9 @@ pub trait Component {
 
     /// Checks if the component is colliding with the edge of the screen
     fn is_at_edge(&self) -> Option<Edge>;
+
+    /// Clears the ball off the screen
+    fn clear(&mut self, screen: &mut Screen);
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
