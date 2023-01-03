@@ -185,35 +185,29 @@ impl Component for Ball {
         self.bounce_back();
     }
 
-    // Code written by me and refactored by ChatGPT
     fn is_at_edge(&self) -> Option<Edge> {
-        let center = Point::new(
-            self.pos.x() + (self.width / 2),
-            self.pos.y() + (self.height / 2),
-        );
+        // Calculate the center y-coordinate of the player component
+        let center_y = self.pos.y() + (self.height / 2);
+
+        // This is the magic sign. It's used to conditionally negate (SCREEN_HEIGHT / 2) in y_distance_from_edge on
+        // line 90. For example if the y coordinate is negative then it will negate (SCREEN_HEIGHT / 2) such that
+        // it corresponds with the *bottom* edge and not the top.
+        let sign = match self.pos.y.is_positive() {
+            true => 1,
+            false => -1,
+        };
 
         // Calculate the distance between the center of the box and the edges of the screen
-        let x_distance_from_edge = (SCREEN_WIDTH / 2) - center.x.abs();
-        let y_distance_from_edge = (SCREEN_HEIGHT / 2) - center.y.abs();
-
-        // Check if the distance between the center of the box and the edge of the screen is close
-        // and if so, check the sign of x and return the appropriate edge
-        if x_distance_from_edge <= (self.width / 2) + 1 {
-            if self.pos.x.is_positive() {
-                return Some(Edge::Right);
-            } else {
-                return Some(Edge::Left);
-            }
-        }
+        let y_distance_from_edge = sign * (SCREEN_HEIGHT / 2) - center_y;
 
         // Check if the distance between the center of the box and the top or bottom edge of the screen
         // is close and if so, return the appropriate edge
-        if y_distance_from_edge <= (self.height / 2) - 1 && self.pos.y.is_positive() {
-            return Some(Edge::Top);
-        } else if y_distance_from_edge < self.height {
+        if y_distance_from_edge.abs() <= (self.height / 2) - sign {
+            if self.pos.y.is_positive() {
+                return Some(Edge::Top);
+            } 
             return Some(Edge::Bottom);
         }
-
         None
     }
 }

@@ -21,6 +21,14 @@ impl Player {
             score: 0
         }
     }
+
+    pub fn inc_score(&mut self) {
+        self.score += 1;
+    }
+
+    pub fn get_score(&self) -> u8 {
+        self.score
+    }
 }
 
 impl Component for Player {

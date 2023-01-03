@@ -17,4 +17,9 @@ impl Point {
     pub fn y(&self) -> i32 {
         self.y
     }
+
+    pub fn reset(&mut self) {
+        self.x = 0;
+        self.y = 0;
+    }
 }
