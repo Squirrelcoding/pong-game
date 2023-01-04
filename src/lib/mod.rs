@@ -22,4 +22,8 @@ impl Point {
         self.x = 0;
         self.y = 0;
     }
+
+    pub fn is_near(&self, other: &Self) -> bool {
+        (self.x - other.x).abs() < 5 && (self.y - other.y).abs() < 5
+    }
 }

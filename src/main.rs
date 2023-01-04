@@ -1,11 +1,8 @@
 mod lib;
 
-use std::{thread, time::Duration};
 
 use lib::{
-    component::{player::Player, Component, Direction},
-    game::{screen::Screen, rt::Runtime},
-    Point,
+    game::{rt::Runtime},
 };
 
 fn main() {

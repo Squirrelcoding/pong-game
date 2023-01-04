@@ -1,7 +1,7 @@
 use rand::{thread_rng, Rng};
 
 use crate::lib::{
-    game::screen::{Screen, SCREEN_HEIGHT, SCREEN_WIDTH},
+    game::screen::{Screen},
     Point,
 };
 
@@ -30,48 +30,48 @@ impl Ball {
 
     /// Returns a random direction for the ball to spin
     // Writen by ChatGPT.
-    fn bounce_back(&mut self) {
+    pub fn bounce_back(&mut self) {
         let mut rng = thread_rng();
-        let choice = rng.gen_range(0..2);
+        let choice: bool = rng.gen();
 
         let new_direction = match self.direction {
             Direction::Up => {
-                if choice == 0 {
+                if choice {
                     Direction::Downleft
                 } else {
                     Direction::Downright
                 }
             }
             Direction::Down => {
-                if choice == 0 {
+                if choice {
                     Direction::Upleft
                 } else {
                     Direction::Upright
                 }
             }
             Direction::Upright => {
-                if choice == 0 {
+                if choice {
                     Direction::Downright
                 } else {
                     Direction::Downleft
                 }
             }
             Direction::Upleft => {
-                if choice == 0 {
+                if choice {
                     Direction::Upright
                 } else {
                     Direction::Downright
                 }
             }
             Direction::Downright => {
-                if choice == 0 {
+                if choice {
                     Direction::Upright
                 } else {
                     Direction::Upleft
                 }
             }
             Direction::Downleft => {
-                if choice == 0 {
+                if choice {
                     Direction::Upright
                 } else {
                     Direction::Upleft
@@ -85,7 +85,7 @@ impl Ball {
 
 impl Component for Ball {
     fn action(&mut self, direction: Direction, screen: &mut Screen) {
-        if let Some(edge) = self.is_at_edge() {
+        if let Some(edge) = self.is_at_y_edge() {
             self.handle_collide(edge, screen);
         }
 
@@ -178,36 +178,24 @@ impl Component for Ball {
         match edge {
             Edge::Top => self.pos.y -= self.height + 1,
             Edge::Bottom => self.pos.y += self.height + 1,
-            Edge::Left => todo!("aaa"),
-            Edge::Right => todo!("aaa"),
         }
 
         self.bounce_back();
     }
 
-    fn is_at_edge(&self) -> Option<Edge> {
-        // Calculate the center y-coordinate of the player component
-        let center_y = self.pos.y() + (self.height / 2);
+    fn center(&self) -> Point {
+        Point::new(self.pos.x + (self.width / 2), self.pos.y + (self.height / 2))
+    }
 
-        // This is the magic sign. It's used to conditionally negate (SCREEN_HEIGHT / 2) in y_distance_from_edge on
-        // line 90. For example if the y coordinate is negative then it will negate (SCREEN_HEIGHT / 2) such that
-        // it corresponds with the *bottom* edge and not the top.
-        let sign = match self.pos.y.is_positive() {
-            true => 1,
-            false => -1,
-        };
+    fn get_width(&self) -> i32 {
+        self.width
+    }
 
-        // Calculate the distance between the center of the box and the edges of the screen
-        let y_distance_from_edge = sign * (SCREEN_HEIGHT / 2) - center_y;
+    fn get_height(&self) -> i32 {
+        self.height
+    }
 
-        // Check if the distance between the center of the box and the top or bottom edge of the screen
-        // is close and if so, return the appropriate edge
-        if y_distance_from_edge.abs() <= (self.height / 2) - sign {
-            if self.pos.y.is_positive() {
-                return Some(Edge::Top);
-            } 
-            return Some(Edge::Bottom);
-        }
-        None
+    fn get_pos(&self) -> Point {
+        self.pos.clone()
     }
 }
